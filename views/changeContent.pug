@@ -1,0 +1,17 @@
+extends includes/layout.pug
+
+block content 
+  if messages
+    each item in messages 
+      .messages(id= item.id)
+        div.message
+          ul.items= item.message
+          ul.items= item.phone
+        .messageButton
+          button 
+            a(href=`/change?id=${item.id}`) Edit 
+          button(onclick="deleteMessage(event)") Delete
+  else 
+    h3(style="color: red") Not Messages
+  button.addButton 
+    a(href="/content/new") Add contact

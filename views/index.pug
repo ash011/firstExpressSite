@@ -1,0 +1,14 @@
+extends includes/layout.pug
+
+block content 
+  if messages
+    each item in messages 
+      .messages
+        div.message
+          ul.items= item.message
+          ul.items= item.phone
+  else 
+    h3(style="color: red") Not Messages
+  button.addButton 
+    a(href="/new") Change
+    

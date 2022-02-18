@@ -1,0 +1,17 @@
+extends includes/layout.pug
+
+block styles 
+  link(rel="stylesheet", href="../styles/style.css")
+
+block content
+  form(action="/change" method="post")
+    textarea(type="text" name="message" pattern="[a-z A-Z]{3,100}" placeholder="Enter your message")= message.message
+    input(type="tel" name="phone" pattern="^[0-9\-\+]{9,15}$" placeholder="Example 374-33-33-33-33" value= message.phone)
+    input(type="hidden" value= message.id name="id")
+    button(type="submit") Change
+  button.addButton 
+    a(href="/") Go home
+block scripts 
+  script(src="../scripts/script.js")
+
+  
