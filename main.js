@@ -1,86 +1,91 @@
 const express = require("express");
 const cors = require("cors");
+const mongoose = require("mongoose");
+const messagesSchema = require("./models/messageModel");
 require("dotenv").config();
 
 const app = express();
 
+// Connect your DB here:
+const dbURL = process.env.DB_URL;
+const port = process.env.PORT || 5000;
+
+mongoose
+  .connect(dbURL, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    console.log("Connected to MongoDB");
+  })
+  .catch((err) => {
+    console.log("Error connecting to MongoDB: ", err);
+  });
+
 app.set("view engine", "pug");
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(express.static("public"));
-app.use(cors());
+app.use(
+  express.json(),
+  express.urlencoded({ extended: false }),
+  express.static("public"),
+  cors()
+);
 
-let messages = [
-  { message: "Hello", phone: "374-33-33-33-33", id: 523456 },
-  { message: "World", phone: "374-33-33-33-33", id: 523457 },
-  { message: "!", phone: "374-33-33-33-33", id: 523458 },
-];
+function validNumber(req, res, next) {
+  let { phone } = req.body;
+  if (isNaN(+phone)) {
+    res.send("Please enter number only");
+    return;
+  } else if (phone.length !== 11) {
+    res.send("Please enter 11 digits number");
+    return;
+  } else if (/^\+?374(33|43|44|55|77|91|93|94|95|96|98|99)/.test(phone)) {
+    next();
+  } else {
+    res.send("Invalid number format");
+    return;
+  }
+}
 
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
+  let messages = await messagesSchema.find();
   res.render("index", { messages: messages });
 });
 
-app.get("/new", (req, res) => {
+app.get("/new", async (req, res) => {
+  let messages = await messagesSchema.find();
   res.render("changeContent", { messages: messages });
 });
 
-app.delete("/new", (req, res) => {
-  messages.forEach((message) => {
-    if (message.id == req.query.id) {
-      messages.splice(messages.indexOf(message), 1);
-      if (messages.length == 0) {
-        messages = false;
-      }
-      console.log(messages);
-    }
-  });
+app.delete("/new", async (req, res) => {
+  await messagesSchema.deleteOne({ _id: req.query.id });
 });
 
 app.get("/content/new", (req, res) => {
   res.render("addMassage");
 });
 
-app.post("/content/new", (req, res) => {
-  let id = "";
-  for (let i = 0; i < 6; i++) {
-    id += Math.floor(Math.random() * 10);
-  }
-  if (messages) {
-    messages.push({
-      message: req.body.message,
-      phone: req.body.phone,
-      id: +id,
-    });
-  } else {
-    messages = [];
-    messages.push({
-      message: req.body.message,
-      phone: req.body.phone,
-      id: +id,
-    });
-  }
+app.post("/content/new", validNumber, (req, res) => {
+  const { message, phone } = req.body;
+  messagesSchema.create([
+    {
+      message,
+      phone,
+    },
+  ]);
   res.redirect("/");
 });
 
-app.get("/change", (req, res) => {
-  messages.forEach((message) => {
-    if (message.id == req.query.id) {
-      res.render("changeMessage", { message: message });
-    }
-  });
+app.get("/change", async (req, res) => {
+  let message = await messagesSchema.findOne({ _id: req.query.id });
+  res.render("changeMessage", { message });
 });
 
-app.post("/change", (req, res) => {
-  messages.forEach((message) => {
-    if (message.id == req.body.id) {
-      message.message = req.body.message;
-      message.phone = req.body.phone;
-    }
-  });
+app.post("/change", validNumber, async (req, res) => {
+  await messagesSchema.updateOne(
+    { _id: req.body.id },
+    { message: req.body.message, phone: req.body.phone }
+  );
   res.redirect("/");
 });
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log("Server is running on port " + process.env.PORT || 3000);
+app.listen(port, () => {
+  console.log("Server is running on port " + port);
 });

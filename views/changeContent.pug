@@ -1,15 +1,15 @@
 extends includes/layout.pug
 
 block content 
-  if messages
+  if messages.length
     each item in messages 
-      .messages(id= item.id)
+      .messages(id= item._id)
         div.message
           ul.items= item.message
           ul.items= item.phone
         .messageButton
           button 
-            a(href=`/change?id=${item.id}`) Edit 
+            a(href=`/change?id=${item._id}`) Edit 
           button(onclick="deleteMessage(event)") Delete
   else 
     h3(style="color: red") Not Messages

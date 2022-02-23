@@ -1,7 +1,7 @@
 extends includes/layout.pug
 
 block content 
-  if messages
+  if messages.length
     each item in messages 
       .messages
         div.message

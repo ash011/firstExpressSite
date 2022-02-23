@@ -4,9 +4,11 @@ block styles
   link(rel="stylesheet", href="../styles/style.css")
 
 block content
+  if(err) 
+    script= console.log(err)
   form(action="/content/new" method="post")
-    textarea(type="text" name="message" pattern="[a-z A-Z]{3,100}" placeholder="Enter your message")
-    input(type="tel" name="phone" pattern="^[0-9\-\+]{9,15}$" placeholder="Example 374-33-33-33-33")
+    textarea(type="text" name="message" maxlength="100" placeholder="Enter your message")
+    input(type="tel" name="phone" maxlength="11" placeholder="Example 374-33-33-33-33")
     button(type="submit") Create
   button.addButton 
     a(href="/") Go home
